@@ -1,6 +1,8 @@
 import express from "express";
 import dotenv from "dotenv";
 import productsRouter from "./routes/products.router.js";
+import cartRouter from "./routes/cart.routers.js";
+import authMiddleware from "./middlewares/authMiddleware.js";
 
 dotenv.config();
 const app = express();
@@ -8,9 +10,10 @@ const PORT = process.env.PORT || 5000;
 import { connectDB } from "./utils/connectDB.js";
 connectDB();
 app.use(express.json());
+app.use(authMiddleware);
 
-app.use("/api/product", productsRouter);
-req.user = {userId: 1, name: "user"};
+app.use("/api/products", productsRouter);
+app.use("/api/cart", cartRouter);
 
 app.get("/", (req, res) => {
     res.send("Hello World");
