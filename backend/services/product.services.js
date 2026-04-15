@@ -1,7 +1,17 @@
 import pool from "../database/db.js";
 
 const getProducts = async () => {
-  const result = await pool.query(`Select * from products`);
+  const result = await pool.query(
+    `SELECT p.*, pi.image_url
+     FROM products p
+     LEFT JOIN LATERAL (
+       SELECT image_url
+       FROM product_images
+       WHERE product_id = p.id
+       ORDER BY id ASC
+       LIMIT 1
+     ) pi ON true`,
+  );
   const products = result.rows;
 
   return products;
@@ -25,7 +35,16 @@ const getProductById = async (id) => {
 
 const filterProductsByCategory = async (category) => {
   const result = await pool.query(
-    `Select * from products where category = $1`,
+    `SELECT p.*, pi.image_url
+     FROM products p
+     LEFT JOIN LATERAL (
+       SELECT image_url
+       FROM product_images
+       WHERE product_id = p.id
+       ORDER BY id ASC
+       LIMIT 1
+     ) pi ON true
+     WHERE p.category = $1`,
     [category],
   );
   const products = result.rows;
@@ -35,7 +54,16 @@ const filterProductsByCategory = async (category) => {
 
 const searchProducts = async (name) => {
   const products = await pool.query(
-    `Select * from products where name ILIKE $1`,
+    `SELECT p.*, pi.image_url
+     FROM products p
+     LEFT JOIN LATERAL (
+       SELECT image_url
+       FROM product_images
+       WHERE product_id = p.id
+       ORDER BY id ASC
+       LIMIT 1
+     ) pi ON true
+     WHERE p.name ILIKE $1`,
     [`%${name}%`],
   );
   return products.rows;
