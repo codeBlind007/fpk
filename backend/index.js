@@ -5,6 +5,8 @@ import cartRouter from "./routes/cart.routers.js";
 import ordersRouter from "./routes/orders.routers.js";
 import wishlistRouter from "./routes/wishlist.router.js";
 import authMiddleware from "./middlewares/authMiddleware.js";
+import pool from "./database/db.js";
+import path from "path";
 import cors from "cors";
 dotenv.config();
 const app = express();
@@ -24,7 +26,7 @@ app.use(
 );
 
 app.use(authMiddleware);
-app.use("/images", express.static("public"));
+app.use("/images", express.static(path.join(process.cwd(), "public")));
 app.use("/api/products", productsRouter);
 app.use("/api/cart", cartRouter);
 app.use("/api/orders", ordersRouter);
