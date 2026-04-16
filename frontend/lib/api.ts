@@ -1,5 +1,7 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL 
-console.log("API Base URL:", API_BASE_URL);
+const API_BASE_URL = (
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"
+).replace(/\/$/, "");
+
 export interface ProductImageDto {
   id: number;
   product_id: number;
@@ -408,12 +410,8 @@ function getImageBaseUrl(): string {
   }
 
   try {
-    return new URL(API_BASE_URL || "").origin;
+    return new URL(API_BASE_URL).origin;
   } catch {
-    if (typeof window !== "undefined") {
-      return window.location.origin;
-    }
-
     return "";
   }
 }
@@ -428,9 +426,22 @@ function resolveProductImageUrl(imageUrl?: string | null): string | undefined {
   }
 
   const baseUrl = getImageBaseUrl();
-  const normalizedImageUrl = imageUrl.startsWith("/")
-    ? imageUrl
-    : `/images/${imageUrl}`;
+  let normalizedImageUrl = imageUrl.trim();
+
+  if (normalizedImageUrl.startsWith("/api/images/")) {
+    normalizedImageUrl = normalizedImageUrl.replace("/api/images/", "/images/");
+  } else if (normalizedImageUrl.startsWith("api/images/")) {
+    normalizedImageUrl = normalizedImageUrl.replace("api/images/", "/images/");
+  } else if (normalizedImageUrl.startsWith("images/")) {
+    normalizedImageUrl = `/${normalizedImageUrl}`;
+  } else if (
+    normalizedImageUrl.startsWith("/") &&
+    !normalizedImageUrl.startsWith("/images/")
+  ) {
+    normalizedImageUrl = `/images${normalizedImageUrl}`;
+  } else if (!normalizedImageUrl.startsWith("/")) {
+    normalizedImageUrl = `/images/${normalizedImageUrl}`;
+  }
 
   if (!baseUrl) {
     return normalizedImageUrl;
