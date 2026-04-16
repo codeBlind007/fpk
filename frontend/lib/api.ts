@@ -1,6 +1,5 @@
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
-
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL 
+console.log("API Base URL:", API_BASE_URL);
 export interface ProductImageDto {
   id: number;
   product_id: number;
@@ -409,7 +408,7 @@ function getImageBaseUrl(): string {
   }
 
   try {
-    return new URL(API_BASE_URL).origin;
+    return new URL(API_BASE_URL || "").origin;
   } catch {
     if (typeof window !== "undefined") {
       return window.location.origin;

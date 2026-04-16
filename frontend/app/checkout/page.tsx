@@ -6,7 +6,6 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import AddressForm from "@/components/AddressForm";
 import PriceSummary from "@/components/PriceSummary";
-import CartItemComponent from "@/components/CartItemComponent";
 import EmptyState from "@/components/EmptyState";
 import { Button } from "@/components/ui/button";
 import { CheckoutSkeleton } from "@/components/Skeletons";
@@ -30,6 +29,7 @@ export default function CheckoutPage() {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const clearCart = useCart((state) => state.clearCart);
   const [summary, setSummary] = useState({
     subtotal: 0,
     tax: 0,
@@ -114,6 +114,8 @@ export default function CheckoutPage() {
         state: address.state,
         postal_code: address.postalCode,
       });
+
+      clearCart();
 
       router.push(`/order-confirmation/${response.orderId}`);
     } catch (error) {

@@ -99,6 +99,13 @@ const createOrder = async (userId, data) => {
       );
     }
 
+    const productIds = items.map((item) => Number(item.product_id));
+    await client.query(
+      `DELETE FROM cart_items
+       WHERE user_id = $1 AND product_id = ANY($2::int[])`,
+      [userId, productIds],
+    );
+
     await client.query("COMMIT");
 
     return order;
