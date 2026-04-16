@@ -123,10 +123,74 @@ const fetchOrderById = async (orderId, userId) => {
   return order.rows[0] || null;
 };
 
+const getOrderHistory = async (userId) => {
+  const result = await pool.query(
+    `
+  SELECT 
+    o.id AS order_id,
+    o.total_amount,
+    o.status,
+    o.shipping_address,
+    o.created_at,
+
+    oi.product_id,
+    oi.quantity,
+    oi.price_at_purchase,
+
+    p.name AS product_name,
+
+    pi.image_url
+
+  FROM orders o
+  JOIN order_items oi ON o.id = oi.order_id
+  JOIN products p ON p.id = oi.product_id
+
+  LEFT JOIN LATERAL (
+    SELECT image_url 
+    FROM product_images 
+    WHERE product_id = p.id 
+    LIMIT 1
+  ) pi ON true
+
+  WHERE o.user_id = $1
+  ORDER BY o.created_at DESC
+  `,
+    [userId],
+  );
+
+  const rows = result.rows;
+
+  const ordersMap = {};
+
+  for (let row of rows) {
+    if (!ordersMap[row.order_id]) {
+      ordersMap[row.order_id] = {
+        id: row.order_id,
+        total_amount: row.total_amount,
+        status: row.status,
+        shipping_address: row.shipping_address,
+        created_at: row.created_at,
+        items: [],
+      };
+    }
+
+    ordersMap[row.order_id].items.push({
+      product_id: row.product_id,
+      name: row.product_name,
+      image_url: row.image_url,
+      quantity: row.quantity,
+      price: row.price_at_purchase,
+    });
+  }
+
+  return Object.values(ordersMap);
+};
+
 const orderServices = {
   calculateSummary,
   createOrder,
   fetchOrderById,
+  getOrderHistory,
 };
 
 export default orderServices;

@@ -271,6 +271,119 @@ export interface OrderByIdResponse {
   order: OrderById;
 }
 
+export interface OrderHistoryItemDto {
+  product_id: number;
+  name: string;
+  image_url?: string;
+  quantity: number;
+  price: string;
+}
+
+export interface OrderHistoryDto {
+  id: number;
+  total_amount: string;
+  status: string | null;
+  shipping_address: {
+    full_name: string;
+    phone_number?: string;
+    address: string;
+    city: string;
+    state: string;
+    postal_code: string;
+  };
+  created_at: string;
+  items: OrderHistoryItemDto[];
+}
+
+export interface OrderHistoryResponseDto {
+  success: boolean;
+  count: number;
+  orders: OrderHistoryDto[];
+}
+
+export interface OrderHistoryItem {
+  product_id: string;
+  name: string;
+  image_url?: string;
+  quantity: number;
+  price: number;
+}
+
+export interface OrderHistory {
+  id: string;
+  total_amount: number;
+  status: string;
+  shipping_address: {
+    full_name: string;
+    phone_number?: string;
+    address: string;
+    city: string;
+    state: string;
+    postal_code: string;
+  };
+  created_at: string;
+  items: OrderHistoryItem[];
+}
+
+export interface OrderHistoryResponse {
+  success: boolean;
+  count: number;
+  orders: OrderHistory[];
+}
+
+export interface WishlistItemDto {
+  product_id: number;
+  name: string;
+  price: string;
+  image_url?: string;
+  created_at: string;
+}
+
+export interface WishlistItem {
+  product_id: string;
+  name: string;
+  price: number;
+  image_url?: string;
+  created_at: string;
+}
+
+export interface WishlistResponseDto {
+  success: boolean;
+  items: WishlistItemDto[];
+}
+
+export interface WishlistResponse {
+  success: boolean;
+  items: WishlistItem[];
+}
+
+export interface AddToWishlistResponseDto {
+  success: boolean;
+  message: string;
+  item?: {
+    user_id: string;
+    product_id: number;
+    created_at?: string;
+  };
+  alreadyExists: boolean;
+}
+
+export interface AddToWishlistResponse {
+  success: boolean;
+  message: string;
+  item?: {
+    user_id: string;
+    product_id: string;
+    created_at?: string;
+  };
+  alreadyExists: boolean;
+}
+
+export interface RemoveFromWishlistResponse {
+  success: boolean;
+  message: string;
+}
+
 export interface ProductDetails {
   id: string;
   name: string;
@@ -469,6 +582,66 @@ function mapOrderByIdResponse(data: OrderByIdResponseDto): OrderByIdResponse {
   };
 }
 
+function mapOrderHistoryResponse(
+  data: OrderHistoryResponseDto,
+): OrderHistoryResponse {
+  return {
+    success: data.success,
+    count: data.count,
+    orders: data.orders.map((order) => ({
+      id: String(order.id),
+      total_amount: Number(order.total_amount),
+      status: order.status ?? "placed",
+      shipping_address: {
+        full_name: order.shipping_address.full_name,
+        phone_number: order.shipping_address.phone_number,
+        address: order.shipping_address.address,
+        city: order.shipping_address.city,
+        state: order.shipping_address.state,
+        postal_code: order.shipping_address.postal_code,
+      },
+      created_at: order.created_at,
+      items: order.items.map((item) => ({
+        product_id: String(item.product_id),
+        name: item.name,
+        image_url: resolveProductImageUrl(item.image_url),
+        quantity: item.quantity,
+        price: Number(item.price),
+      })),
+    })),
+  };
+}
+
+function mapWishlistResponse(data: WishlistResponseDto): WishlistResponse {
+  return {
+    success: data.success,
+    items: (data.items || []).map((item) => ({
+      product_id: String(item.product_id),
+      name: item.name,
+      price: Number(item.price),
+      image_url: resolveProductImageUrl(item.image_url),
+      created_at: item.created_at,
+    })),
+  };
+}
+
+function mapAddToWishlistResponse(
+  data: AddToWishlistResponseDto,
+): AddToWishlistResponse {
+  return {
+    success: data.success,
+    message: data.message,
+    item: data.item
+      ? {
+          user_id: data.item.user_id,
+          product_id: String(data.item.product_id),
+          created_at: data.item.created_at,
+        }
+      : undefined,
+    alreadyExists: data.alreadyExists,
+  };
+}
+
 // Helper function to make API calls with auth and error handling
 async function apiCall<T = unknown>(
   endpoint: string,
@@ -606,4 +779,32 @@ export const ordersAPI = {
     const data = await apiCall<OrderByIdResponseDto>(`/orders/${id}`);
     return mapOrderByIdResponse(data);
   },
+
+  getOrderHistory: async (): Promise<OrderHistoryResponse> => {
+    const data = await apiCall<OrderHistoryResponseDto>("/orders/history");
+    return mapOrderHistoryResponse(data);
+  },
+};
+
+export const wishlistAPI = {
+  getItems: async (): Promise<WishlistResponse> => {
+    const data = await apiCall<WishlistResponseDto>("/wishlist");
+    return mapWishlistResponse(data);
+  },
+
+  addItem: async (
+    productId: string | number,
+  ): Promise<AddToWishlistResponse> => {
+    const data = await apiCall<AddToWishlistResponseDto>("/wishlist", {
+      method: "POST",
+      body: JSON.stringify({ productId }),
+    });
+
+    return mapAddToWishlistResponse(data);
+  },
+
+  removeItem: (productId: string | number) =>
+    apiCall<RemoveFromWishlistResponse>(`/wishlist/${productId}`, {
+      method: "DELETE",
+    }),
 };

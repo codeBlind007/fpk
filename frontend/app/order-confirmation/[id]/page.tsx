@@ -149,6 +149,11 @@ export default function OrderConfirmationPage() {
 
               {/* Actions */}
               <div className="space-y-2">
+                <Link href="/orders">
+                  <Button variant="outline" className="w-full" size="lg">
+                    View Order History
+                  </Button>
+                </Link>
                 <Link href="/">
                   <Button
                     className="w-full bg-blue-600 hover:bg-blue-700"

@@ -27,6 +27,23 @@ export interface CartStore {
   setTotals: (subtotal: number, tax: number, shippingCharge: number) => void;
 }
 
+export interface WishlistItem {
+  product_id: string;
+  name: string;
+  price: number;
+  image_url?: string;
+  created_at?: string;
+}
+
+export interface WishlistStore {
+  items: WishlistItem[];
+  loaded: boolean;
+  setItems: (items: WishlistItem[]) => void;
+  addItem: (item: WishlistItem) => void;
+  removeItem: (productId: string) => void;
+  clear: () => void;
+}
+
 export const useCart = create<CartStore>((set) => ({
   items: [],
   total: 0,
@@ -69,4 +86,30 @@ export const useCart = create<CartStore>((set) => ({
       shippingCharge,
       total: subtotal + tax + shippingCharge,
     }),
+}));
+
+export const useWishlist = create<WishlistStore>((set) => ({
+  items: [],
+  loaded: false,
+
+  setItems: (items) => set({ items, loaded: true }),
+
+  addItem: (item) =>
+    set((state) => {
+      if (
+        state.items.some((existing) => existing.product_id === item.product_id)
+      ) {
+        return { ...state, loaded: true };
+      }
+
+      return { items: [item, ...state.items], loaded: true };
+    }),
+
+  removeItem: (productId) =>
+    set((state) => ({
+      items: state.items.filter((item) => item.product_id !== productId),
+      loaded: true,
+    })),
+
+  clear: () => set({ items: [], loaded: false }),
 }));

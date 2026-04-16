@@ -92,8 +92,27 @@ const getOrderById = async (req, res, next) => {
   }
 };
 
+const getOrderHistory = async (req, res, next) => {
+  try {
+    const { userId } = req.user;
+    const orders = await orderService.getOrderHistory(userId);
+
+    res.status(200).json({
+      success: true,
+      count: orders.length,
+      orders
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message || "Internal server error",
+    });
+  }
+};
+
 export const orderController = {
   getOrderSummary,
   placeOrder,
   getOrderById,
+  getOrderHistory
 };

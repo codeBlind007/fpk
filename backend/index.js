@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import productsRouter from "./routes/products.router.js";
 import cartRouter from "./routes/cart.routers.js";
 import ordersRouter from "./routes/orders.routers.js";
+import wishlistRouter from "./routes/wishlist.router.js";
 import authMiddleware from "./middlewares/authMiddleware.js";
 import cors from "cors";
 dotenv.config();
@@ -24,6 +25,7 @@ app.use("/images", express.static("public"));
 app.use("/api/products", productsRouter);
 app.use("/api/cart", cartRouter);
 app.use("/api/orders", ordersRouter);
+app.use("/api/wishlist", wishlistRouter);
 
 app.get("/", (req, res) => {
   res.send("Hello World");

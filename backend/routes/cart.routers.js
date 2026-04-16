@@ -7,7 +7,7 @@ router
   .post("/:productId", cartController.addToCart)
   .patch("/:cartId", cartController.updateCartItem)
   .delete("/:cartId", cartController.removeFromCart);
-
-router.get("/summary", cartController.cartSummary);
+  
+  router.get("/summary", cartController.cartSummary);
 
 export default router;

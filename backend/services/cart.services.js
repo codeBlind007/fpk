@@ -2,7 +2,17 @@ import pool from "../database/db.js";
 
 const getCartItems = async (userId) => {
   const result = await pool.query(
-    `select * from products as p join cart_items as ci on p.id = ci.product_id where ci.user_id = $1`,
+    `SELECT p.*, ci.*, pi.image_url
+     FROM products AS p
+     JOIN cart_items AS ci ON p.id = ci.product_id
+     LEFT JOIN LATERAL (
+       SELECT image_url
+       FROM product_images
+       WHERE product_id = p.id
+       ORDER BY id ASC
+       LIMIT 1
+     ) pi ON true
+     WHERE ci.user_id = $1`,
     [userId],
   );
   const cartItems = result.rows;

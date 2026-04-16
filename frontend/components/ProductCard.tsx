@@ -5,8 +5,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { cartAPI } from "@/lib/api";
-import { useCart } from "@/lib/store";
+import { cartAPI, wishlistAPI } from "@/lib/api";
+import { useCart, useWishlist } from "@/lib/store";
 
 interface ProductCardProps {
   id: string | number;
@@ -30,7 +30,16 @@ export default function ProductCard({
   badge,
 }: ProductCardProps) {
   const [isAdding, setIsAdding] = useState(false);
+  const [isTogglingWishlist, setIsTogglingWishlist] = useState(false);
   const addItemToCart = useCart((state) => state.addItem);
+  const wishlistItems = useWishlist((state) => state.items);
+  const addWishlistItem = useWishlist((state) => state.addItem);
+  const removeWishlistItem = useWishlist((state) => state.removeItem);
+
+  const productId = String(id);
+  const isInWishlist = wishlistItems.some(
+    (item) => item.product_id === productId,
+  );
 
   const discount = originalPrice
     ? Math.round(((originalPrice - price) / originalPrice) * 100)
@@ -72,6 +81,43 @@ export default function ProductCard({
     }
   };
 
+  const handleToggleWishlist = async (
+    e: React.MouseEvent<HTMLButtonElement>,
+  ) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (isTogglingWishlist) {
+      return;
+    }
+
+    try {
+      setIsTogglingWishlist(true);
+
+      if (isInWishlist) {
+        await wishlistAPI.removeItem(productId);
+        removeWishlistItem(productId);
+        return;
+      }
+
+      const response = await wishlistAPI.addItem(productId);
+
+      addWishlistItem({
+        product_id: response.item?.product_id ?? productId,
+        name,
+        price,
+        image_url: imageUrl,
+        created_at: response.item?.created_at ?? new Date().toISOString(),
+      });
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to update wishlist";
+      alert(message);
+    } finally {
+      setIsTogglingWishlist(false);
+    }
+  };
+
   return (
     <Link href={`/product/${id}`}>
       <div className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-200 h-full flex flex-col">
@@ -105,8 +151,20 @@ export default function ProductCard({
           )}
 
           {/* Wishlist Button */}
-          <button className="absolute bottom-2 right-2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 transition-colors">
-            <Heart className="h-5 w-5 text-gray-400" />
+          <button
+            type="button"
+            aria-label={
+              isInWishlist ? "Remove from wishlist" : "Add to wishlist"
+            }
+            disabled={isTogglingWishlist}
+            onClick={handleToggleWishlist}
+            className="absolute bottom-2 right-2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 transition-colors"
+          >
+            <Heart
+              className={`h-5 w-5 transition-colors ${
+                isInWishlist ? "fill-red-500 text-red-500" : "text-gray-400"
+              }`}
+            />
           </button>
         </div>
 

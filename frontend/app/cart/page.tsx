@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Header from "@/components/Header";
@@ -30,13 +30,32 @@ export default function CartPage() {
   const router = useRouter();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [summary, setSummary] = useState({
-    subtotal: 0,
-    tax: 0,
-    shipping_charge: 0,
-  });
 
   const setCartTotals = useCart((state) => state.setTotals);
+
+  const summary = useMemo(() => {
+    const subtotal = cartItems.reduce(
+      (acc, item) => acc + item.product.price * item.quantity,
+      0,
+    );
+    const tax = 0;
+    const shipping_charge = subtotal > 0 ? 0 : 0;
+
+    return {
+      subtotal,
+      tax,
+      shipping_charge,
+    };
+  }, [cartItems]);
+
+  const totalAmount = useMemo(
+    () => summary.subtotal + summary.tax + summary.shipping_charge,
+    [summary],
+  );
+
+  useEffect(() => {
+    setCartTotals(summary.subtotal, summary.tax, summary.shipping_charge);
+  }, [setCartTotals, summary]);
 
   // Fetch cart items
   useEffect(() => {
@@ -46,17 +65,6 @@ export default function CartPage() {
         const itemsResponse = await cartAPI.getItems();
         const cartData = itemsResponse.cartItems || [];
         setCartItems(cartData);
-
-        // Fetch cart summary
-        if (cartData.length > 0) {
-          const summaryResponse = await cartAPI.getSummary();
-          setSummary(summaryResponse.summary || {});
-          setCartTotals(
-            summaryResponse.summary?.subtotal || 0,
-            summaryResponse.summary?.tax || 0,
-            summaryResponse.summary?.shipping_charge || 0,
-          );
-        }
       } catch (error) {
         console.error("Error fetching cart:", error);
       } finally {
@@ -65,7 +73,7 @@ export default function CartPage() {
     };
 
     fetchCart();
-  }, [setCartTotals]);
+  }, []);
 
   const handleRemoveItem = async (cartId: string) => {
     try {
@@ -151,30 +159,45 @@ export default function CartPage() {
                 ))}
               </div>
 
-              {/* Order Summary */}
-              <div className="space-y-4">
-                <div className="bg-white rounded-lg p-4 border border-gray-200 sticky top-24">
-                  <h2 className="font-semibold text-gray-900 mb-4">
-                    Order Summary
-                  </h2>
+              {/* Cart Summary */}
+              <div className="space-y-4 lg:sticky lg:top-24 self-start">
+                <div className="bg-white rounded-lg p-4 border border-gray-200">
                   <PriceSummary
+                    itemCount={cartItems.length}
                     subtotal={summary.subtotal}
                     tax={summary.tax}
                     shippingCharge={summary.shipping_charge}
                   />
+                </div>
+
+                <div className="bg-white rounded-lg p-4 border border-gray-200 text-sm text-gray-600">
+                  Safe and secure payments. Easy returns. 100% authentic
+                  products.
+                </div>
+
+                <div className="bg-white rounded-lg p-3 border border-gray-200">
+                  <div className="flex items-center justify-between mb-3">
+                    <div>
+                      <p className="text-xs text-gray-500">Total Amount</p>
+                      <p className="text-2xl font-semibold text-gray-900">
+                        ₹{totalAmount.toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
                   <Button
                     onClick={handleCheckout}
-                    className="w-full mt-4 bg-orange-500 hover:bg-orange-600 text-white"
+                    className="w-full bg-[#fb641b] hover:bg-[#ef5b14] text-white"
                     size="lg"
                   >
-                    Proceed to Checkout
+                    Place Order
                   </Button>
-                  <Link href="/">
-                    <Button variant="ghost" className="w-full mt-2" size="lg">
-                      Continue Shopping
-                    </Button>
-                  </Link>
                 </div>
+
+                <Link href="/" className="block">
+                  <Button variant="ghost" className="w-full" size="lg">
+                    Continue Shopping
+                  </Button>
+                </Link>
               </div>
             </div>
           )}
