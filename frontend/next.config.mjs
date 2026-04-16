@@ -4,7 +4,13 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "example.com",
+        hostname: "fpkbackend-production.up.railway.app",
+        pathname: "/images/**",
+      },
+      {
+        protocol: "https",
+        hostname: "fpkbackend-production.up.railway.app",
+        pathname: "/api/images/**",
       },
       {
         protocol: "http",
