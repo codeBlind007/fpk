@@ -47,7 +47,7 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-white">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between gap-4 py-3">
+        <div className="flex items-center gap-3 py-3 sm:gap-4">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 shrink-0">
             <div className="rounded-md bg-[#ffe500] px-4 py-2 text-lg font-bold leading-none text-[#2874f0] shadow-sm sm:px-5 sm:text-xl">
@@ -55,15 +55,12 @@ export default function Header() {
             </div>
           </Link>
 
-          {/* Search Bar - Hidden on mobile */}
-          <form
-            onSubmit={handleSearch}
-            className="hidden md:flex flex-1 max-w-md mx-4"
-          >
+          {/* Search Bar */}
+          <form onSubmit={handleSearch} className="flex min-w-0 flex-1">
             <div className="relative w-full">
               <Input
                 type="text"
-                placeholder="Search for products, brands and more"
+                placeholder="Search for products"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pr-10"
@@ -78,7 +75,7 @@ export default function Header() {
           </form>
 
           {/* Right Actions */}
-          <div className="flex items-center gap-2 sm:gap-4">
+          <div className="flex shrink-0 items-center gap-1 sm:gap-4">
             <Link href="/orders" className="hidden sm:block">
               <Button variant="ghost" size="sm" className="text-sm">
                 Orders
@@ -124,27 +121,8 @@ export default function Header() {
           </div>
         </div>
 
-        {/* Mobile Search */}
         {mobileMenuOpen && (
           <div className="py-3 md:hidden space-y-3">
-            <form onSubmit={handleSearch}>
-              <div className="relative w-full">
-                <Input
-                  type="text"
-                  placeholder="Search for products"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pr-10"
-                />
-                <button
-                  type="submit"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  <Search className="h-5 w-5" />
-                </button>
-              </div>
-            </form>
-
             <Link href="/orders" onClick={() => setMobileMenuOpen(false)}>
               <Button variant="outline" className="w-full" size="sm">
                 View Orders
