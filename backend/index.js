@@ -11,11 +11,12 @@ import cors from "cors";
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
-const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
+const FRONTEND_URL = process.env.FRONTEND_URL;
 const NODE_ENV = process.env.NODE_ENV;
 
 import { connectDB } from "./utils/connectDB.js";
 connectDB();
+
 app.use(express.json());
 app.use(
   cors({

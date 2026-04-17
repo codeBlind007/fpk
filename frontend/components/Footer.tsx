@@ -112,7 +112,7 @@ export default function Footer() {
         {/* Social & Copyright */}
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-sm text-gray-400">
-            &copy; 2024 Flipkart Clone. All rights reserved.
+            &copy; 2026 Flipkart Clone. All rights reserved.
           </p>
           <div className="flex gap-4">
             <a
